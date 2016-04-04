@@ -10,3 +10,6 @@ $GLOBALS['TL_DCA']['tl_files']['config']['onload_callback'][] = array('Guave\S3\
 //sync all files from local to s3 when sync called
 $GLOBALS['TL_DCA']['tl_files']['config']['onload_callback'][] = array('Guave\S3\Classes\S3','syncAllFilesToS3');
 
+//moveFile
+$GLOBALS['TL_DCA']['tl_files']['config']['oncut_callback'][] = array('Guave\S3\Classes\S3','moveFile');
+

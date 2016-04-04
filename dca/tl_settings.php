@@ -1,7 +1,7 @@
 <?php
 
 $GLOBALS['TL_DCA']['tl_settings']['palettes']['__selector__'][] = 'enableS3';
-$GLOBALS['TL_DCA']['tl_settings']['palettes'] = str_replace('useSMTP;', '{s3_legend},enableS3;useSMTP;', $GLOBALS['TL_DCA']['tl_settings']['palettes']);
+$GLOBALS['TL_DCA']['tl_settings']['palettes']['default'] .= ';{s3_legend},enableS3;';
 $GLOBALS['TL_DCA']['tl_settings']['subpalettes']['enableS3'] = 'awsAccessKey,awsSecretKey,s3Region,s3Bucket';
 
 $GLOBALS['TL_DCA']['tl_settings']['fields']['enableS3'] = array(

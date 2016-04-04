@@ -83,7 +83,10 @@ class S3 {
 				$resource = fopen(TL_ROOT.'/'.$file, 'r');
 				$upload = self::$client->upload(self::$bucket, $file, $resource, 'public-read');
 				if($upload) {
-					\Message::addConfirmation('file '.$file.' loaded to s3');
+					$timestampFile = \Config::get('uploadPath').'/timestamp.txt';
+					if($file != $timestampFile) {
+						\Message::addInfo('file '.$file.' loaded to s3');
+					}
 				}
 			} catch(Exception $e) {
 				die($e->getMessage());
@@ -203,7 +206,7 @@ class S3 {
 
 		@ini_set('max_execution_time', 0);
 
-		\Message::addConfirmation('syncAllFilesFromS3');
+		\Message::addInfo('syncAllFilesFromS3');
 
 		$client = self::$client;
 		$iterator = $client->getIterator('ListObjects', array('Bucket' => self::$bucket));
@@ -235,37 +238,17 @@ class S3 {
 		}
 	}
 
-	public static function moveFile() {
+	public static function moveFile($src, $destination, $dca) {
 
 		if(!self::isS3Enabled()) {
 			return false;
 		}
 
-
-
-		$act = \Input::get('act');
-		$mode = \Input::get('mode');
-		$fromFile =  \Input::get('id');
-		$toFolder =  \Input::get('pid');
-		if($act == 'cut' && $mode == 2 && $fromFile && $toFolder) {
-
-			/**
-			 * @todo hear on clipboard
-			 */
-//			$session = \Session::getInstance();
-//			$clipbaord = $session->get('CLIPBOARD');
-//			var_dump($clipbaord['tl_files']);exit;
-
-			$info = pathinfo($fromFile);
-			$toFile = $toFolder.'/'.$info['basename'];
-
-			try {
-				self::deleteFile($fromFile);
-			} catch(Exception $e) {
-				die($e->getMessage());
-			}
-
-
+		try {
+			self::deleteFile($src);
+			self::postUpload(array($destination));
+		} catch(Exception $e) {
+			die($e->getMessage());
 		}
 
 	}
@@ -287,7 +270,7 @@ class S3 {
 					'Key' => $path
 				)
 			);
-			\Message::addConfirmation(sprintf('delete file %s from S3', $path));
+			\Message::addInfo(sprintf('delete file %s from S3', $path));
 		} catch(Exception $e) {
 			die($e->getMessage());
 		}
@@ -303,7 +286,7 @@ class S3 {
 	 * @return boolean
 	 */
 	public static function isS3Enabled() {
-		return $GLOBALS['TL_CONFIG']['enableS3'];
+		return \Config::get('enableS3');
 	}
 
 	public static function setTimestamp($time)
@@ -356,7 +339,6 @@ class S3 {
 		$timestamp = self::getTimestamp();
 		$s3Timestamp = self::getS3Timestamp();
 
-		\Message::addConfirmation($s3Timestamp.' > '.$timestamp);
 		if($s3Timestamp > $timestamp) {
 			return true;
 		}
