@@ -72,7 +72,7 @@ class S3 {
 	 * contao hook for file uploads
 	 * @param array $arrFiles
 	 */
-	public function postUpload($arrFiles, $updateTimestamp = true){
+	public static function postUpload($arrFiles, $updateTimestamp = true){
 
 		if(!self::isS3Enabled()) {
 			return;
@@ -147,7 +147,7 @@ class S3 {
 		}
 	}
 
-	public function syncAllFilesToS3() {
+	public static function syncAllFilesToS3() {
 
 		if(!self::isS3Enabled()) {
 			return false;
@@ -317,19 +317,20 @@ class S3 {
 		return (int)$s3Timestamp;
 	}
 	
-	public function getTimestamp() {
-		$timestamp = @file_get_contents(\Config::get('uploadPath').'/timestamp.txt');
-		if(!is_file(TL_ROOT.'/'.$timestamp)) {
+	public static function getTimestamp() {
+		$timestamp = (int)@file_get_contents(\Config::get('uploadPath').'/timestamp.txt');
+		if($timestamp <= 0) {
 			$timestamp = time();
 			self::setTimestamp($timestamp);
+			return 0;
 		}
-		return (int)$timestamp;
+		return $timestamp;
 	}
 
 	/**
 	 * @return bool check if there new files on S3
 	 */
-	public function checkForNewFiles()
+	public static function checkForNewFiles()
 	{
 
         if(!self::isS3Enabled()) {
@@ -338,6 +339,8 @@ class S3 {
 
 		$timestamp = self::getTimestamp();
 		$s3Timestamp = self::getS3Timestamp();
+
+//		var_dump(array(date('d.m.Y H:i:s',$timestamp), date('d.m.Y H:i:s',$s3Timestamp)));
 
 		if($s3Timestamp > $timestamp) {
 			return true;
@@ -348,7 +351,7 @@ class S3 {
 
 	}
 
-	public function syncFromS3IfTimestamp()
+	public static function syncFromS3IfTimestamp()
 	{
         if(!self::isS3Enabled()) {
             return;
